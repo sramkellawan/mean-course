@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { Subject } from 'rxjs';
 import { Post } from './post.model';
 
@@ -7,16 +8,22 @@ export class PostsService{
   private posts: Post[] = [];
   private postsUpdated = new Subject<Post[]>();
 
+  constructor(private http: HttpClient){}
+
   getPosts(){
-    return [...this.posts];
+   this.http.get<{message: string, posts:Post[]}>('http://localhost:3000/api/posts')
+   .subscribe((postData) => {
+    this.posts = postData.posts;
+    this.postsUpdated.next([...this.posts]);
+   })
   }
 
   getPostUpdateListener(){
     return this.postsUpdated.asObservable();
   }
 
-  addPost(title: String, content: String){
-    const post: Post={title: title, content: content};
+  addPost( title: String, content: String){
+    const post: Post={id: '', title: title, content: content};
     this.posts.push(post);
     this.postsUpdated.next([...this.posts]);
   }
